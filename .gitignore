@@ -1,0 +1,33 @@
+﻿## .NET
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+.vs/
+
+## Configuraci�n con secretos � NUNCA subir al repo
+appsettings.Development.json
+appsettings.Production.json
+
+## Solo se sube appsettings.json con valores vac�os/placeholder:
+## "DefaultConnection": "",
+## "Jwt:Key": "",
+
+## Migraciones generadas (opcional, puedes subirlas si quieres)
+# Migrations/
+
+## Archivos de publicaci�n
+publish/
+*.pubxml
+
+## Documentos subidos por usuarios (Sesi�n 13)
+wwwroot/documents/
+
+## IDEs
+.idea/
+*.DotSettings.user
+
+## Sistema operativo
+.DS_Store
+Thumbs.db
