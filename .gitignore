@@ -9,10 +9,7 @@ obj/
 ## Configuraci�n con secretos � NUNCA subir al repo
 appsettings.Development.json
 appsettings.Production.json
-
-## Solo se sube appsettings.json con valores vac�os/placeholder:
-## "DefaultConnection": "",
-## "Jwt:Key": "",
+appsettings.json
 
 ## Migraciones generadas (opcional, puedes subirlas si quieres)
 # Migrations/
