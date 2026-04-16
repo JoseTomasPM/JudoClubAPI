@@ -1,9 +1,8 @@
 namespace JudoClubAPI.DTOs;
 using JudoClubAPI.Models;
 
-public class RegisterDto
+public class LoginDto
 {
 	public string Email { get; set; } = string.Empty;
 	public string Password { get; set; } = string.Empty;
-    public Rol Rol { get; set; } = Rol.User;
 }

@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using JudoClubAPI.Data;
 using System.Text;
 using JudoClubAPI.Models;
-
+Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +30,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            RoleClaimType = ClaimTypes.Role
+
+        };
+        opt.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("JWT ERROR FULL:");
+                Console.WriteLine(context.Exception.ToString());
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -46,23 +58,27 @@ builder.Services.AddSwaggerGen(c =>
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
-        Scheme = "Bearer",
+        Scheme = "bearer",
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Escribe tu token JWT aqu�"
+        Description = "Introduce SOLO el token JWT sin la palabra Bearer"
     });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement{
     {
+        new OpenApiSecurityScheme
         {
-            new OpenApiSecurityScheme
+            Reference = new OpenApiReference
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
-                }
+                Type = ReferenceType.SecurityScheme,
+                Id = "Bearer"
             },
-            Array.Empty<string>()
-        }
+            Scheme = "bearer",
+            Name = "Authorization",
+            In = ParameterLocation.Header
+        },
+        new List<string>()
+    }
     });
 });
 
@@ -115,5 +131,25 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+
+/*  CREATE ADMIN
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!db.Users.Any(u => u.Rol == Rol.Admin))
+    {
+        db.Users.Add(new User
+        {
+            Email = "admin",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"),
+            Rol = Rol.Admin
+        });
+
+        db.SaveChanges();
+    }
+}
+*/
 
 app.Run();
