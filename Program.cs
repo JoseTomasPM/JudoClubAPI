@@ -6,12 +6,18 @@ using System.Security.Claims;
 using JudoClubAPI.Data;
 using System.Text;
 using JudoClubAPI.Models;
+using Microsoft.AspNetCore.Http.Features;
+
 Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
 var builder = WebApplication.CreateBuilder(args);
 
 //  Controllers 
 builder.Services.AddControllers();
+builder.Services.Configure<FormOptions>(opt =>
+{
+    opt.MultipartBodyLengthLimit = 5 * 1024 * 1024; // 5MB máximo global
+});
 
 //  Database 
 builder.Services.AddDbContext<AppDbContext>(opt =>
@@ -95,16 +101,12 @@ builder.Services.AddCors(opt =>
 */
 
 
-/*
- * 
- // Sesi�n 13 � cuando hagas subida de PDFs
 builder.Services.AddHttpContextAccessor();
 
-// Para servir archivos est�ticos (los PDFs subidos)
-app.UseStaticFiles();
+
  
  
- */
+
 
 
 
@@ -131,6 +133,9 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Para servir archivos (los PDFs subidos)
+app.UseStaticFiles();
 
 
 /*  CREATE ADMIN
