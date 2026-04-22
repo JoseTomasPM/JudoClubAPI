@@ -39,7 +39,7 @@ public class StudentController : ControllerBase
                 Name = s.Name,
                 BirthDate = s.BirthDate,
                 Belt = s.Belt.ToString(),
-                Category = s.Category,
+                Category = s.Category.ToString(),
                 PhotoUrl = s.PhotoUrl,
                 UserId = s.UserId
             })
@@ -72,7 +72,7 @@ public class StudentController : ControllerBase
                 Name = s.Name,
                 BirthDate = s.BirthDate,
                 Belt = s.Belt.ToString(),
-                Category = s.Category,
+                Category = s.Category.ToString(),
                 PhotoUrl = s.PhotoUrl,
                 UserId = s.UserId
             })
@@ -115,7 +115,7 @@ public class StudentController : ControllerBase
             Name = student.Name,
             BirthDate = student.BirthDate,
             Belt = student.Belt.ToString(),
-            Category = student.Category,
+            Category = student.Category.ToString(),
             PhotoUrl = student.PhotoUrl,
             UserId = student.UserId
         });
@@ -176,7 +176,29 @@ public class StudentController : ControllerBase
         };
 
         _db.Students.Add(student);
+
+        var futureSessions = await _db.Sesions
+            .Where(s => s.Category == student.Category && s.Date >= DateTime.UtcNow)
+            .ToListAsync();
+
+        foreach (var s in futureSessions)
+        {
+            var alreadyAssigned = await _db.SesionStudents
+                .AnyAsync(ss => ss.SesionId == s.Id && ss.StudentId == student.Id);
+
+            if (!alreadyAssigned)
+            {
+                _db.SesionStudents.Add(new SesionStudent
+                {
+                    SesionId = s.Id,
+                    StudentId = student.Id,
+                    Attended = false
+                });
+            }
+        }
+
         await _db.SaveChangesAsync();
+
 
         return StatusCode(201, new StudentDto
         {
@@ -184,7 +206,7 @@ public class StudentController : ControllerBase
             Name = student.Name,
             BirthDate = student.BirthDate,
             Belt = student.Belt.ToString(),
-            Category = student.Category,
+            Category = student.Category.ToString(),
             PhotoUrl = student.PhotoUrl,
             UserId = student.UserId
         });
@@ -203,11 +225,39 @@ public class StudentController : ControllerBase
                 Name = s.Name,
                 BirthDate = s.BirthDate,
                 Belt = s.Belt.ToString(),
-                Category = s.Category,
+                Category = s.Category.ToString(),
                 PhotoUrl = s.PhotoUrl,
                 UserId = s.UserId
             })
             .ToListAsync();
         return Ok(students);
+    }
+    // GET api/student/{id}/sessions
+    // Sesiones en las que participa un alumno
+    [HttpGet("{id}/sessions")]
+    public async Task<IActionResult> GetSessions(int id)
+    {
+        var myId = UserHelper.GetUserId(User);
+        var isAdmin = UserHelper.IsAdmin(User);
+
+        // Verificar acceso
+        var student = await _db.Students.FindAsync(id);
+        if (student == null)
+            return NotFound($"No existe ningún alumno con Id {id}.");
+        if (!isAdmin && student.UserId != myId)
+            return Forbid();
+
+        var sessions = await _db.SesionStudents
+            .Where(ss => ss.StudentId == id)
+            .Include(ss => ss.Sesion)
+            .Select(ss => new
+            {
+                ss.Sesion.Id,
+                ss.Sesion.Date,
+                ss.Sesion.Description
+            })
+            .ToListAsync();
+
+        return Ok(sessions);
     }
 }

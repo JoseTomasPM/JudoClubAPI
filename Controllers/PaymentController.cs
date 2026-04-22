@@ -84,4 +84,25 @@ public class PaymentController : ControllerBase
         await _db.SaveChangesAsync();
         return NoContent();
     }
+
+    // GET api/payments
+    // Todos los pagos de todos los alumnos (solo Admin)
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var payments = await _db.Payments
+            .Include(p => p.Student)
+            .Select(p => new PaymentDto
+            {
+                Id = p.Id,
+                Concept = p.Concept,
+                Amount = p.Amount,
+                Date = p.Date,
+                Status = p.Status.ToString(),
+                StudentId = p.StudentId
+            })
+            .ToListAsync();
+
+        return Ok(payments);
+    }
 }
