@@ -1,0 +1,15 @@
+# Build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /app
+
+COPY JudoClubAPI.csproj .
+RUN dotnet restore
+
+COPY . .
+RUN dotnet publish JudoClubAPI.csproj -c Release -o out
+
+# Run
+FROM mcr.microsoft.com/dotnet/aspnet:9.0
+WORKDIR /app
+COPY --from=build /app/out .
+ENTRYPOINT ["dotnet", "JudoClubAPI.dll"]
