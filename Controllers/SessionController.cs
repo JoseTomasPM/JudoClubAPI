@@ -28,6 +28,7 @@ public class SessionController : ControllerBase
                 Id = s.Id,
                 Date = s.Date,
                 Description = s.Description,
+                Category = s.Category.ToString(),
                 StudentCount = s.SesionStudents.Count
             })
             .ToListAsync();
@@ -47,6 +48,7 @@ public class SessionController : ControllerBase
                 Id = s.Id,
                 Date = s.Date,
                 Description = s.Description,
+                Category = s.Category.ToString(),
                 StudentCount = s.SesionStudents.Count
             })
             .FirstOrDefaultAsync();
@@ -64,9 +66,9 @@ public class SessionController : ControllerBase
     {
         var session = new Sesion
         {
-            Date = dto.Date,
+            Date = dto.Date.ToUniversalTime(),
             Description = dto.Description,
-            Category = dto.Category
+            Category = dto.Category,
         };
 
         _db.Sesions.Add(session);
@@ -108,7 +110,7 @@ public class SessionController : ControllerBase
         if (session == null)
             return NotFound($"No existe ninguna sesión con Id {id}.");
 
-        session.Date = dto.Date;
+        session.Date = dto.Date.ToUniversalTime();
         session.Description = dto.Description;
         session.Category = dto.Category;
         await _db.SaveChangesAsync();
@@ -230,5 +232,33 @@ public class SessionController : ControllerBase
 
         return Ok(new { studentId, attended = link.Attended });
     }
+
+    // GET api/sessions/mymysessions — sesiones del usuario logueado
+    [HttpGet("mysessions")]
+    [Authorize]
+    public async Task<IActionResult> GetMySessions()
+    {
+        // Obtener el userId del token JWT
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!int.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
+
+        var sessions = await _db.Sesions
+            .Where(s => s.SesionStudents
+                .Any(ss => ss.Student.UserId == userId))
+            .Select(s => new SessionDto
+            {
+                Id = s.Id,
+                Date = s.Date,
+                Description = s.Description,
+                Category = s.Category.ToString(),
+                StudentCount = s.SesionStudents.Count
+            })
+            .OrderByDescending(s => s.Date)
+            .ToListAsync();
+
+        return Ok(sessions);
+    }
+
 
 }

@@ -168,7 +168,7 @@ public class StudentController : ControllerBase
         var student = new Student
         {
             Name = dto.Name,
-            BirthDate = dto.BirthDate,
+            BirthDate = dto.BirthDate.ToUniversalTime(),
             Belt = dto.Belt,
             Category = dto.Category,
             PhotoUrl = dto.PhotoUrl,

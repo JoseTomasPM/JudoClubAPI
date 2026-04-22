@@ -7,7 +7,7 @@ public class SessionDto
     public int Id { get; set; }
     public DateTime Date { get; set; }
     public string Description { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty; // sigue string — se convierte con .ToString()
+    public string Category { get; set; } = string.Empty; 
     public int StudentCount { get; set; }
 }
 
