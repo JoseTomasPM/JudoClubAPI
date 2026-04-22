@@ -89,16 +89,18 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // CORS 
-builder.Services.AddCors(opt =>
+builder.Services.AddCors(options =>
 {
-    opt.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .WithOrigins("https://jolly-bonbon-9822d5.netlify.app")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
-/* policy.WithOrigins("https://tu-frontend.netlify.app")
-      .AllowAnyMethod().AllowAnyHeader()
 
-*/
 
 
 builder.Services.AddHttpContextAccessor();
