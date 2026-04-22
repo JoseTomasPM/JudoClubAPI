@@ -94,7 +94,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy
-            .WithOrigins("https://jolly-bonbon-9822d5.netlify.app")
+            .WithOrigins("https://judoyamato.netlify.app")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -113,6 +113,12 @@ AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 
 var app = builder.Build();
+
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "ok",
+    time = DateTime.UtcNow
+}));
 
 // DB test 
 using (var scope = app.Services.CreateScope())
