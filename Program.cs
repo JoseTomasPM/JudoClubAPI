@@ -89,7 +89,7 @@ builder.Services.AddCors(options =>
             .WithOrigins(
                 "https://judoclubweb.pages.dev",
                 "http://localhost:5173",  // desarrollo local
-                "http://localhost:5174"
+                "http://localhost:5260"
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
