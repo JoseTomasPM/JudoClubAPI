@@ -87,7 +87,7 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "https://judoyamato.netlify.app",
+                "https://judoclubweb.pages.dev",
                 "http://localhost:5173",  // desarrollo local
                 "http://localhost:5174"
             )
